@@ -36,7 +36,9 @@ public class GPXWayPoint extends GPXBasePoint {
 		putStringValueInXmlIfNotNull(GPXBasePoint.XML.TAG_DESC, getDescription(), ps, 2);
 		putFloatValueInXmlIfNotNull(GPXBasePoint.XML.TAG_HDOP, getHDop(), ps, 2);
 		putFloatValueInXmlIfNotNull(GPXBasePoint.XML.TAG_VDOP, getVDop(), ps, 2);
-	
+
+		if (getLink() != null) getLink().toGPX(ps);
+
 		closeXmlTag(XML.TAG_WPT, ps, true, 1);
 		
 	}

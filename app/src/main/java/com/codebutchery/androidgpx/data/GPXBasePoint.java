@@ -78,6 +78,11 @@ public class GPXBasePoint extends GPXBaseEntity {
 	 * Point Type as String
 	 * */
 	private String mType = null;
+
+	/**
+	 * Link as GPXLink
+	 * */
+	private GPXLink mLink = null;
 	
 	/**
 	 * Latitude and Longitude are mandatory values
@@ -162,4 +167,11 @@ public class GPXBasePoint extends GPXBaseEntity {
 		this.mVDop = mVDop;
 	}
 
+	public GPXLink getLink() {
+		return mLink;
+	}
+
+	public void setLink(GPXLink mLink) {
+		this.mLink = mLink;
+	}
 }

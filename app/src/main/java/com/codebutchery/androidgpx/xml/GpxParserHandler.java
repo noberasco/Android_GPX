@@ -3,6 +3,7 @@ package com.codebutchery.androidgpx.xml;
 
 import com.codebutchery.androidgpx.data.GPXBaseEntity;
 import com.codebutchery.androidgpx.data.GPXBasePoint;
+import com.codebutchery.androidgpx.data.GPXLink;
 import com.codebutchery.androidgpx.data.GPXRoute;
 import com.codebutchery.androidgpx.data.GPXRoutePoint;
 import com.codebutchery.androidgpx.data.GPXSegment;
@@ -38,6 +39,7 @@ public class GpxParserHandler extends DefaultHandler {
     private GPXTrackPoint mCurrentTrackPoint = null;
     private GPXRoutePoint mCurrentRoutePoint = null;
     private GPXWayPoint mCurrentWayPoint = null;
+    private GPXLink mCurrentLink = null;
     
     private int mTracksCount = 0;
     private int mRoutesCount = 0;
@@ -104,6 +106,7 @@ public class GpxParserHandler extends DefaultHandler {
     	else if (localName.equals(GPXSegment.XML.TAG_TRKSEG)) onNewTrackSegment();
     	else if (localName.equals(GPXTrackPoint.XML.TAG_TRKPT)) onNewTrackPoint(attributes);
         else if (localName.equals(GPXRoutePoint.XML.TAG_RTEPT)) onNewRoutePoint(attributes);
+        else if (localName.equals(GPXLink.XML.TAG_LINK)) onNewLink(attributes);
 
     }
     
@@ -224,6 +227,16 @@ public class GpxParserHandler extends DefaultHandler {
 		}
     	
     }
+
+    private void onNewLink(Attributes attrs) throws SAXException {
+
+        // Gpx format checks
+        if (mCurrentLink != null) throwWithLocationInfo("Nested Link");
+
+        String href = attrs.getValue(GPXLink.XML.ATTR_HREF);
+
+        mCurrentLink = new GPXLink(href);
+    }
  
     /** 
      * This will be called when the tags of the XML end.
@@ -270,6 +283,12 @@ public class GpxParserHandler extends DefaultHandler {
 
             mListener.onGpxNewRoutePointParsed(++mRoutePointsCount, mCurrentRoutePoint);
             mCurrentRoutePoint = null;
+        }
+        else if (localName.equalsIgnoreCase(GPXLink.XML.TAG_LINK)) {
+            if (mCurrentWayPoint != null) {
+                mCurrentWayPoint.setLink(mCurrentLink);
+            }
+            mCurrentLink = null;
         }
         // Track Points / Way Points / Route Points tags
         else if (localName.equalsIgnoreCase(GPXBasePoint.XML.TAG_DESC)) {
@@ -360,7 +379,8 @@ public class GpxParserHandler extends DefaultHandler {
         	
         }
         else if (localName.equalsIgnoreCase(GPXBasePoint.XML.TAG_TYPE)) {
-        	if (mCurrentTrackPoint != null) { mCurrentTrackPoint.setType(mStringBuffer.toString()); }
+            if (mCurrentLink != null) { mCurrentLink.setType(mStringBuffer.toString()); }
+        	else if (mCurrentTrackPoint != null) { mCurrentTrackPoint.setType(mStringBuffer.toString()); }
         	else if (mCurrentWayPoint != null) { mCurrentWayPoint.setType(mStringBuffer.toString()); }
             else if (mCurrentRoutePoint != null) { mCurrentRoutePoint.setType(mStringBuffer.toString()); }
             else if (mCurrentTrack != null) mCurrentTrack.setType(mStringBuffer.toString());
@@ -374,7 +394,10 @@ public class GpxParserHandler extends DefaultHandler {
             else if (mCurrentRoute != null) mCurrentRoute.setGpsComment(mStringBuffer.toString());
            // else throwWithLocationInfo("Found misplaced tag: " + GPXTrack.XML.TAG_CMT);
         }
-        
+        else if (localName.equalsIgnoreCase(GPXLink.XML.TAG_TEXT)) {
+            if (mCurrentLink != null) { mCurrentLink.setText(mStringBuffer.toString()); }
+        }
+
         mStringBuffer = null;
         
     }
