@@ -1,6 +1,8 @@
 package com.codebutchery.androidgpx.xml;
 
 
+import android.util.Log;
+
 import com.codebutchery.androidgpx.data.GPXBaseEntity;
 import com.codebutchery.androidgpx.data.GPXBasePoint;
 import com.codebutchery.androidgpx.data.GPXLink;
@@ -17,7 +19,8 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import java.util.Date;
- 
+import java.util.HashMap;
+
 public class GpxParserHandler extends DefaultHandler {
  
 	public static interface GpxParserProgressListener {
@@ -40,6 +43,8 @@ public class GpxParserHandler extends DefaultHandler {
     private GPXRoutePoint mCurrentRoutePoint = null;
     private GPXWayPoint mCurrentWayPoint = null;
     private GPXLink mCurrentLink = null;
+    private HashMap<String, String> mCurrentExtensions = null;
+    private String mCurrentExtensionKey = null;
     
     private int mTracksCount = 0;
     private int mRoutesCount = 0;
@@ -99,15 +104,18 @@ public class GpxParserHandler extends DefaultHandler {
     public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
     	
     	mStringBuffer = new StringBuffer();
-    	
-    	if (localName.equals(GPXWayPoint.XML.TAG_WPT)) onNewWayPoint(attributes);
+
+        if (mCurrentExtensions != null) {
+            mCurrentExtensionKey = localName;
+        }
+        else if (localName.equals(GPXBaseEntity.XML.TAG_EXTENSIONS)) onNewExtension();
+    	else if (localName.equals(GPXWayPoint.XML.TAG_WPT)) onNewWayPoint(attributes);
     	else if (localName.equals(GPXTrack.XML.TAG_TRK)) onNewTrack();
         else if (localName.equals(GPXRoute.XML.TAG_RTE)) onNewRoute();
     	else if (localName.equals(GPXSegment.XML.TAG_TRKSEG)) onNewTrackSegment();
     	else if (localName.equals(GPXTrackPoint.XML.TAG_TRKPT)) onNewTrackPoint(attributes);
         else if (localName.equals(GPXRoutePoint.XML.TAG_RTEPT)) onNewRoutePoint(attributes);
         else if (localName.equals(GPXLink.XML.TAG_LINK)) onNewLink(attributes);
-
     }
     
     private void onNewTrack()  throws SAXException {
@@ -121,6 +129,10 @@ public class GpxParserHandler extends DefaultHandler {
 
         mCurrentTrack = new GPXTrack();
 
+    }
+
+    private void onNewExtension() throws SAXException {
+        mCurrentExtensions = new HashMap<>();
     }
 
     private void onNewRoute()  throws SAXException {
@@ -243,8 +255,38 @@ public class GpxParserHandler extends DefaultHandler {
      **/
     @Override
     public void endElement(String uri, String localName, String qName) throws SAXException {
-    	
-        if (localName.equalsIgnoreCase(GPXWayPoint.XML.TAG_WPT)) {
+
+        if (mCurrentExtensionKey != null && localName.equalsIgnoreCase(mCurrentExtensionKey)) {
+            String stringValue = mStringBuffer.toString().trim();
+
+            if (stringValue.length() > 0) {
+                mCurrentExtensions.put(mCurrentExtensionKey, stringValue);
+            }
+
+            mCurrentExtensionKey = null;
+        }
+        else if (localName.equalsIgnoreCase(GPXBaseEntity.XML.TAG_EXTENSIONS)) {
+            if (mCurrentTrackPoint != null) {
+                mCurrentTrackPoint.setExtensions(mCurrentExtensions);
+            }
+            else if (mCurrentSegment != null) {
+                mCurrentSegment.setExtensions(mCurrentExtensions);
+            }
+            else if (mCurrentTrack != null) {
+                mCurrentTrack.setExtensions(mCurrentExtensions);
+            }
+            else if (mCurrentRoutePoint != null) {
+                mCurrentRoutePoint.setExtensions(mCurrentExtensions);
+            }
+            else if (mCurrentRoute != null) {
+                mCurrentRoute.setExtensions(mCurrentExtensions);
+            }
+            else if (mCurrentWayPoint != null) {
+                mCurrentWayPoint.setExtensions(mCurrentExtensions);
+            }
+            mCurrentExtensions = null;
+        }
+        else if (localName.equalsIgnoreCase(GPXWayPoint.XML.TAG_WPT)) {
         	mListener.onGpxNewWayPointParsed(++mWayPointsCount, mCurrentWayPoint);
         	mCurrentWayPoint = null;
         }

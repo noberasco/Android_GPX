@@ -5,9 +5,23 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.TimeZone;
 
 public class GPXBaseEntity {
+	private HashMap<String, String> mExtensions = new HashMap<>();
+
+	public static class XML {
+		public static final String TAG_EXTENSIONS = "extensions";
+	}
+
+	public HashMap<String, String> getExtensions() {
+		return mExtensions;
+	}
+
+	public void setExtensions(HashMap<String, String> extensions) {
+		this.mExtensions = extensions;
+	}
 	
 	public static Date parseTimestampIntoDate(String timestampString) {
 		
