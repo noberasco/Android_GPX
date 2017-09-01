@@ -36,6 +36,8 @@ public class GPXSegment extends GPXBaseEntity {
 		openXmlTag(XML.TAG_TRKSEG, ps, true, 2);
 
 		for (GPXTrackPoint p : mTrackPoints) p.toGPX(ps);
+
+		putExtensionsInXmlIfNotNull(ps, 3);
 	
 		closeXmlTag(XML.TAG_TRKSEG, ps, true, 2);
 		

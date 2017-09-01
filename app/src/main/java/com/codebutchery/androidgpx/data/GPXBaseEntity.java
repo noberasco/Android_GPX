@@ -158,5 +158,16 @@ public class GPXBaseEntity {
 		putNewLine(ps);
 		
 	}
-	
+
+	protected void putExtensionsInXmlIfNotNull(PrintStream ps, int tabs) {
+		if (mExtensions != null && mExtensions.size() > 0) {
+			openXmlTag(XML.TAG_EXTENSIONS, ps, true, tabs);
+
+			for (HashMap.Entry<String, String> extension : mExtensions.entrySet()) {
+				putStringValueInXmlIfNotNull(extension.getKey(), extension.getValue(), ps, tabs+1);
+			}
+
+			closeXmlTag(XML.TAG_EXTENSIONS, ps, true, tabs);
+		}
+	}
 }

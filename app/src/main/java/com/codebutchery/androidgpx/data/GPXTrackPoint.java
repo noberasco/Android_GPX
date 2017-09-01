@@ -36,6 +36,7 @@ public class GPXTrackPoint extends GPXBasePoint {
 		putStringValueInXmlIfNotNull(GPXBasePoint.XML.TAG_DESC, getDescription(), ps, 4);
 		putFloatValueInXmlIfNotNull(GPXBasePoint.XML.TAG_HDOP, getHDop(), ps, 4);
 		putFloatValueInXmlIfNotNull(GPXBasePoint.XML.TAG_VDOP, getVDop(), ps, 4);
+		putExtensionsInXmlIfNotNull(ps, 4);
 	
 		closeXmlTag(XML.TAG_TRKPT, ps, true, 3);
 		
