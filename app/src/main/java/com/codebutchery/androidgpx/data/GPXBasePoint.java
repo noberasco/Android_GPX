@@ -115,7 +115,7 @@ public class GPXBasePoint extends GPXBaseEntity {
 		return mElevation;
 	}
 
-	public void setElevation(float mElevation) {
+	public void setElevation(Float mElevation) {
 		this.mElevation = mElevation;
 	}
 
